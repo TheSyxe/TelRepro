@@ -1,0 +1,1109 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TelRepro.Views.MainPage"
+             xmlns:t="clr-namespace:Telerik.XamarinForms.DataControls;assembly=Telerik.XamarinForms.DataControls"
+             xmlns:tlv="clr-namespace:Telerik.XamarinForms.DataControls.ListView;assembly=Telerik.XamarinForms.DataControls"
+             xmlns:prism="clr-namespace:Prism.Mvvm;assembly=Prism.Forms"
+             xmlns:helpers="clr-namespace:TelRepro;assembly=TelRepro"
+             prism:ViewModelLocator.AutowireViewModel="True"
+             BackgroundColor="White">
+  <ContentPage.Content>
+    <AbsoluteLayout BackgroundColor="#00338D">
+      <!--Header-->
+      <Grid AbsoluteLayout.LayoutBounds="0,0,1,0.1"
+            AbsoluteLayout.LayoutFlags="All"
+            BackgroundColor="#00338D"
+            Padding="5"
+            ColumnSpacing="2">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="4*"/>
+          <ColumnDefinition Width="4*"/>
+          <ColumnDefinition Width="*"/>
+          <!--<ColumnDefinition Width="*"/>-->
+        </Grid.ColumnDefinitions>
+        <StackLayout Grid.Column="0"
+                     Padding="5,0,0,0">
+          <Label Text="Open Action Items"
+                 Style="{StaticResource WhiteLabel}"
+                 FontSize="{StaticResource LargeFont}"
+                 HorizontalOptions="FillAndExpand"
+                 VerticalOptions="CenterAndExpand"/>
+        </StackLayout>
+        <AbsoluteLayout Grid.Column="1"
+                        HorizontalOptions="FillAndExpand"
+                        VerticalOptions="FillAndExpand"
+                        Padding="0">
+          <Button Style="{StaticResource NwpHeaderButton}"
+                  AbsoluteLayout.LayoutBounds="0,0.5,1,0.75"
+                  AbsoluteLayout.LayoutFlags="All"
+                  Text="{Binding GroupStr, StringFormat='Grouped by: {0}'}"
+                  Command="{Binding GroupByCommand}"
+                  IsEnabled="False"
+                  HorizontalOptions="CenterAndExpand"
+                  VerticalOptions="Center"
+                  BorderRadius="0">
+          </Button>
+        </AbsoluteLayout>
+
+        <Image Grid.Column="2"
+               Source="ic_settings_white_24dp.png"
+               HorizontalOptions="Center"
+          VerticalOptions="Center">
+          <Image.GestureRecognizers>
+            <TapGestureRecognizer Command="{Binding HamburgerCommand}"/>
+          </Image.GestureRecognizers>
+        </Image>
+      </Grid>
+      <!--End Header-->
+      <Grid AbsoluteLayout.LayoutBounds="0,1,1,0.9"
+            AbsoluteLayout.LayoutFlags="All"
+            BackgroundColor="#E0E1DD"
+            RowSpacing="0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="7*"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!--Body-->
+        <StackLayout Grid.Row="0"
+                            HorizontalOptions="FillAndExpand"
+                            VerticalOptions="FillAndExpand"
+                            Spacing="0">
+          <StackLayout HorizontalOptions="CenterAndExpand"
+                       VerticalOptions="Fill"
+                       Spacing="2"
+                       Padding="0,10,0,10"
+                       IsVisible="{Binding ShouldShowNoActions}">
+            <StackLayout.GestureRecognizers>
+              <TapGestureRecognizer Command="{Binding RefreshCommand}"/>
+            </StackLayout.GestureRecognizers>
+            <Label Style="{StaticResource DarkBlackLabel}"
+                   Text="You currently have no open action items."
+                   FontSize="{StaticResource LargeFont}"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   IsVisible="{Binding ShouldShowNoActions}"/>
+            <Label Style="{StaticResource DarkBlackLabel}"
+                   Text="Please check again later!"
+                   FontSize="{StaticResource MediumFont}"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   LineBreakMode="NoWrap"
+                   IsVisible="{Binding ShouldShowNoActions}"/>
+            <BoxView MinimumHeightRequest="5"
+                     HeightRequest="5"
+                     BackgroundColor="Transparent"
+                     Color="Transparent"/>
+            <Label Style="{StaticResource MediumBlackLabel}"
+                   Text="tap to refresh"
+                   FontSize="{StaticResource MicroFont}"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   IsVisible="{Binding ShouldShowNoActions}"/>
+          </StackLayout>
+          <t:RadListView x:Name="ActionListView"
+                   IsVisible="{Binding ShouldActionListBeShown}"
+                   ItemSwiping="ActionListView_OnItemSwiping"
+                   ItemTapped="List_OnItemTapped"
+                   RefreshRequested="ActionListView_OnRefreshRequested"
+                   BackgroundColor="White">
+            <t:RadListView.IsPullToRefreshEnabled>
+              <OnPlatform x:TypeArguments="x:Boolean" Android="True" iOS="False"/>
+            </t:RadListView.IsPullToRefreshEnabled>
+            <helpers:GroupDescriptorBehavior.Descriptor>
+              <tlv:PropertyGroupDescriptor PropertyName="ActionTypeStr"/>
+            </helpers:GroupDescriptorBehavior.Descriptor>
+            <t:RadListView.GroupHeaderTemplate>
+              <DataTemplate>
+                <StackLayout BackgroundColor="#E0E1DD"
+                             Padding="5,0,5,0"
+                             HorizontalOptions="CenterAndExpand"
+                             VerticalOptions="Center">
+                  <Label Style="{StaticResource DarkBlackLabel}"
+                         Text="{Binding}"
+                         BackgroundColor="#E0E1DD"
+                         FontSize="{StaticResource LargeFont}"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center"/>
+                </StackLayout>
+              </DataTemplate>
+            </t:RadListView.GroupHeaderTemplate>
+            <t:RadListView.ItemTemplate>
+              <DataTemplate>
+                <tlv:ListViewTemplateCell>
+                  <tlv:ListViewTemplateCell.View>
+                    <StackLayout>
+                      <StackLayout Padding="5,2,5,3"
+                                   IsVisible="{Binding IsPrebillingApproval}">
+                        <StackLayout Orientation="Vertical"
+                                     HorizontalOptions="FillAndExpand"
+                                     VerticalOptions="FillAndExpand"
+                                     Padding="0"
+                                     Spacing="1">
+                          <StackLayout Orientation="Horizontal"
+                                       HorizontalOptions="FillAndExpand"
+                                       VerticalOptions="FillAndExpand"
+                                       Spacing="5"
+                                       Padding="0,0,5,0">
+                            <Label Style="{StaticResource DarkBlackLabel}"
+                                   Text="{Binding PropertyStr}"
+                                   FontSize="{StaticResource MediumFont}"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="StartAndExpand"/>
+                            <Label Style="{StaticResource MediumBlackLabel}"
+                                   Text="{Binding CreatedAt, StringFormat='{0}'}"
+                                   HorizontalOptions="EndAndExpand"
+                                   VerticalOptions="Center"
+                                   FontSize="{StaticResource MediumFont}"
+                                   Opacity="1"/>
+                          </StackLayout>
+                          <Grid Padding="5,0,5,2"
+                                RowSpacing="0"
+                                ColumnSpacing="5">
+                            <Grid.RowDefinitions>
+                              <RowDefinition Height="*"/>
+                              <RowDefinition Height="*"/>
+                              <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="2*"/>
+                              <ColumnDefinition Width="3*"/>
+                              <ColumnDefinition Width="3*"/>
+                              <ColumnDefinition Width="3*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackLayout Grid.Row="1"
+                                         Grid.Column="0"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="Current"
+                                     FontSize="{StaticResource MicroFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="2"
+                                         Grid.Column="0"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="Previous"
+                                     FontSize="{StaticResource MicroFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="0"
+                                         Grid.Column="1"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="Total # Bills"
+                                     HorizontalOptions="Center"
+                                     FontSize="{StaticResource MicroFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="1"
+                                         Grid.Column="1"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="{Binding CurrentBillCount}"
+                                     HorizontalOptions="Center"
+                                     FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="2"
+                                         Grid.Column="1"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="{Binding PreviousBillCount}"
+                                     HorizontalOptions="Center"
+                                     FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="0"
+                                         Grid.Column="2"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="Avg Bill"
+                                     FontSize="{StaticResource MicroFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="1"
+                                         Grid.Column="2"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="{Binding CurrentAvgNormalBill, StringFormat='{0:C}'}"
+                                     HorizontalOptions="Center"
+                                     FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="2"
+                                         Grid.Column="2"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="{Binding PreviousAvgNormalBill, StringFormat='{0:C}'}"
+                                     HorizontalOptions="Center"
+                                     FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="0"
+                                         Grid.Column="3"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                      Text="Max Bill"
+                                      HorizontalOptions="Center"
+                                      FontSize="{StaticResource MicroFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="1"
+                                         Grid.Column="3"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                      Text="{Binding CurrentMaxNormalBill, StringFormat='{0:C}'}"
+                                      HorizontalOptions="Center"
+                                      FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="2"
+                                         Grid.Column="3"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                  Text="{Binding PreviousMaxNormalBill, StringFormat='{0:C}'}"
+                                  HorizontalOptions="Center"
+                                  FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                          </Grid>
+                        </StackLayout>
+                      </StackLayout>
+                      <StackLayout Padding="5,2,5,3"
+                                   IsVisible="{Binding IsUtilityAlert}">
+                        <StackLayout Orientation="Vertical"
+                                     HorizontalOptions="FillAndExpand"
+                                     VerticalOptions="FillAndExpand"
+                                     Padding="0"
+                                     Spacing="1">
+                          <StackLayout Orientation="Horizontal"
+                                       HorizontalOptions="FillAndExpand"
+                                       VerticalOptions="FillAndExpand"
+                                       Spacing="5"
+                                       Padding="5,0,5,0">
+                            <Label Style="{StaticResource DarkBlackLabel}"
+                                  Text="{Binding PropertyStr, StringFormat='{0}'}"
+                                   FontAttributes="Bold"
+                                  VerticalOptions="Center"
+                                   HorizontalOptions="StartAndExpand"
+                                   FontSize="{StaticResource MediumFont}"/>
+                            <Label Style="{StaticResource MediumBlackLabel}"
+                                   Text="{Binding CreatedAt, StringFormat='{0}'}"
+                                   HorizontalOptions="EndAndExpand"
+                                   VerticalOptions="Center"
+                                   FontSize="{StaticResource MediumFont}"/>
+                          </StackLayout>
+                          <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Spacing="1" Padding="15,0,0,0">
+                            <Label Style="{StaticResource MediumBlackLabel}"
+                                   Text="{Binding AlertType, StringFormat='{0}'}"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center"
+                                   FontSize="{StaticResource SmallFont}"/>
+                            <Label Style="{StaticResource MediumBlackLabel}"
+                                   Text="{Binding AlertDescription, StringFormat=' ({0})'}"
+                                   IsVisible="{Binding IsAlertSameAsDesc}"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center"
+                                   FontSize="{StaticResource SmallFont}"/>
+                          </StackLayout>
+                        </StackLayout>
+                      </StackLayout>
+                    </StackLayout>
+                  </tlv:ListViewTemplateCell.View>
+                </tlv:ListViewTemplateCell>
+              </DataTemplate>
+            </t:RadListView.ItemTemplate>
+            <t:RadListView.ItemSwipeContentTemplate>
+              <DataTemplate>
+                <Grid BackgroundColor="#00338D">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                  </Grid.ColumnDefinitions>
+                  <Button Text="Accept" TextColor="White" BackgroundColor="#00338D" IsVisible="{Binding IsPrebillingApproval}" BorderRadius="0" Grid.Column="0"/>
+                  <Button Text="Reject" TextColor="White" BackgroundColor="#00338D" IsVisible="{Binding IsPrebillingApproval}" BorderRadius="0" Grid.Column="2"/>
+                  <Label Text="{Binding Property}" Style="{StaticResource WhiteLabel}"
+                         HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" Grid.Column="1"/>
+                </Grid>
+              </DataTemplate>
+            </t:RadListView.ItemSwipeContentTemplate>
+          </t:RadListView>
+          <t:RadListView x:Name="PropertyListView"
+                         IsVisible="{Binding ShouldPropertyListBeShown}"
+                         ItemSwiping="ActionListView_OnItemSwiping"
+                         ItemTapped="List_OnItemTapped"
+                         RefreshRequested="ActionListView_OnRefreshRequested"
+                         BackgroundColor="White">
+            <t:RadListView.IsPullToRefreshEnabled>
+              <OnPlatform x:TypeArguments="x:Boolean" Android="True" iOS="False"/>
+            </t:RadListView.IsPullToRefreshEnabled>
+            <helpers:GroupDescriptorBehavior.Descriptor>
+              <tlv:PropertyGroupDescriptor PropertyName="Property"/>
+            </helpers:GroupDescriptorBehavior.Descriptor>
+            <t:RadListView.GroupHeaderTemplate>
+              <DataTemplate>
+                <StackLayout BackgroundColor="#E0E1DD"
+                             Padding="5,0,5,0"
+                             HorizontalOptions="CenterAndExpand"
+                             VerticalOptions="Center">
+                  <Label Style="{StaticResource DarkBlackLabel}"
+                         Text="{Binding}"
+                         BackgroundColor="#E0E1DD"
+                         FontSize="{StaticResource LargeFont}"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center"/>
+                </StackLayout>
+              </DataTemplate>
+            </t:RadListView.GroupHeaderTemplate>
+            <t:RadListView.ItemTemplate>
+              <DataTemplate>
+                <tlv:ListViewTemplateCell>
+                  <tlv:ListViewTemplateCell.View>
+                    <StackLayout>
+                      <StackLayout Padding="5,2,5,3"
+                                   IsVisible="{Binding IsPrebillingApproval}">
+                        <StackLayout Orientation="Vertical"
+                                        HorizontalOptions="FillAndExpand"
+                                        VerticalOptions="FillAndExpand"
+                                        Padding="0"
+                                        Spacing="1">
+                          <StackLayout Orientation="Horizontal"
+                                       HorizontalOptions="FillAndExpand"
+                                       VerticalOptions="FillAndExpand"
+                                       Spacing="5"
+                                       Padding="0,0,5,0">
+                            <Label Style="{StaticResource DarkBlackLabel}"
+                                   Text="{Binding ActionTypeStr}"
+                                   FontSize="{StaticResource MediumFont}"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="StartAndExpand"/>
+                            <!--<Label Style="{StaticResource DarkBlackLabel}"
+                                   Text="{Binding IsRentIncludedStr, StringFormat='Rent {0}'}"
+                                   FontSize="{StaticResource MediumFont}"
+                                   FontAttributes="Bold"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="StartAndExpand"/>-->
+                            <Label Style="{StaticResource MediumBlackLabel}"
+                                   Text="{Binding CreatedAt, StringFormat='{0}'}"
+                                   HorizontalOptions="EndAndExpand"
+                                   VerticalOptions="Center"
+                                   FontSize="{StaticResource MediumFont}"
+                                   Opacity="1"/>
+                          </StackLayout>
+                          <Grid Padding="5,0,5,2">
+                            <Grid.RowSpacing>
+                              <OnPlatform x:TypeArguments="x:Double" iOS="10" Android="0"/>
+                            </Grid.RowSpacing>
+                            <Grid.RowDefinitions>
+                              <RowDefinition Height="*"/>
+                              <RowDefinition Height="*"/>
+                              <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="2*"/>
+                              <ColumnDefinition Width="3*"/>
+                              <ColumnDefinition Width="3*"/>
+                              <ColumnDefinition Width="3*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackLayout Grid.Row="1"
+                                         Grid.Column="0"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="Current"
+                                     FontSize="{StaticResource MicroFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="2"
+                                         Grid.Column="0"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="Previous"
+                                     FontSize="{StaticResource MicroFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="0"
+                                         Grid.Column="1"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="Total # Bills"
+                                     HorizontalOptions="Center"
+                                     FontSize="{StaticResource MicroFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="1"
+                                         Grid.Column="1"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="{Binding CurrentBillCount}"
+                                     HorizontalOptions="Center"
+                                     FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="2"
+                                         Grid.Column="1"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="{Binding PreviousBillCount}"
+                                     HorizontalOptions="Center"
+                                     FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="0"
+                                         Grid.Column="2"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="Avg Bill"
+                                     FontSize="{StaticResource MicroFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="1"
+                                         Grid.Column="2"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="{Binding CurrentAvgNormalBill, StringFormat='{0:C}'}"
+                                     HorizontalOptions="Center"
+                                     FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="2"
+                                         Grid.Column="2"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                     Text="{Binding PreviousAvgNormalBill, StringFormat='{0:C}'}"
+                                     HorizontalOptions="Center"
+                                     FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="0"
+                                         Grid.Column="3"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                      Text="Max Bill"
+                                      HorizontalOptions="Center"
+                                      FontSize="{StaticResource MicroFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="1"
+                                         Grid.Column="3"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                      Text="{Binding CurrentMaxNormalBill, StringFormat='{0:C}'}"
+                                      HorizontalOptions="Center"
+                                      FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="2"
+                                         Grid.Column="3"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="FillAndExpand">
+                              <Label Style="{StaticResource MediumBlackLabel}"
+                                  Text="{Binding PreviousMaxNormalBill, StringFormat='{0:C}'}"
+                                  HorizontalOptions="Center"
+                                  FontSize="{StaticResource SmallFont}"/>
+                            </StackLayout>
+                          </Grid>
+                        </StackLayout>
+                      </StackLayout>
+                      <StackLayout Padding="5,2,5,3"
+                                   IsVisible="{Binding IsUtilityAlert}">
+                        <StackLayout Orientation="Vertical"
+                                     HorizontalOptions="FillAndExpand"
+                                     VerticalOptions="FillAndExpand"
+                                     Padding="0"
+                                     Spacing="1">
+                          <StackLayout Orientation="Horizontal"
+                                       HorizontalOptions="FillAndExpand"
+                                       VerticalOptions="FillAndExpand"
+                                       Spacing="5"
+                                       Padding="5,0,5,0">
+                            <Label Style="{StaticResource DarkBlackLabel}"
+                                  Text="{Binding ActionTypeStr, StringFormat='{0}'}"
+                                   FontAttributes="Bold"
+                                  VerticalOptions="Center"
+                                   HorizontalOptions="StartAndExpand"
+                                   FontSize="{StaticResource MediumFont}"/>
+                            <Label Style="{StaticResource MediumBlackLabel}"
+                                   Text="{Binding CreatedAt, StringFormat='{0}'}"
+                                   HorizontalOptions="EndAndExpand"
+                                   VerticalOptions="Center"
+                                   FontSize="{StaticResource MediumFont}"/>
+                          </StackLayout>
+                          <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Spacing="1" Padding="15,0,0,0">
+                            <Label Style="{StaticResource MediumBlackLabel}"
+                                   Text="{Binding AlertType, StringFormat='{0}'}"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center"
+                                   FontSize="{StaticResource SmallFont}"/>
+                            <Label Style="{StaticResource MediumBlackLabel}"
+                                   Text="{Binding AlertDescription, StringFormat=' ({0})'}"
+                                   IsVisible="{Binding IsAlertSameAsDesc}"
+                                   VerticalOptions="Center"
+                                   HorizontalOptions="Center"
+                                   FontSize="{StaticResource SmallFont}"/>
+                          </StackLayout>
+                        </StackLayout>
+
+                      </StackLayout>
+                    </StackLayout>
+                  </tlv:ListViewTemplateCell.View>
+                </tlv:ListViewTemplateCell>
+              </DataTemplate>
+            </t:RadListView.ItemTemplate>
+            <t:RadListView.ItemSwipeContentTemplate>
+              <DataTemplate>
+                <Grid BackgroundColor="#00338D">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                  </Grid.ColumnDefinitions>
+                  <Button Text="Accept" TextColor="White" BackgroundColor="#00338D" IsVisible="{Binding IsPrebillingApproval}" BorderRadius="0" Grid.Column="0"/>
+                  <Button Text="Reject" TextColor="White" BackgroundColor="#00338D" IsVisible="{Binding IsPrebillingApproval}" BorderRadius="0" Grid.Column="2"/>
+                  <Label Text="{Binding Property}" Style="{StaticResource WhiteLabel}"
+                         HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" Grid.Column="1"/>
+                </Grid>
+              </DataTemplate>
+            </t:RadListView.ItemSwipeContentTemplate>
+          </t:RadListView>
+        </StackLayout>
+        <!--Footer-->
+        <Grid Grid.Row="1"
+              Padding="5,5,5,5"
+              BackgroundColor="White">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <StackLayout Grid.Column="0"
+                       IsVisible="{Binding ShouldAMCardBeShown}"
+                       Padding="5,0,5,0"
+                       BackgroundColor="#00338D">
+            <Grid HorizontalOptions="FillAndExpand"
+                  VerticalOptions="EndAndExpand">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackLayout Grid.Row="0"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="{Binding AmName}"
+                       FontSize="{StaticResource MediumFont}"/>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="0">
+                <Image Source="ic_phone_white_36dp.png"
+                       Opacity="0.87"
+                       HorizontalOptions="Start">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding PhoneCommand}"
+                                          CommandParameter="{Binding AmPhone}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="2">
+                <Image Source="ic_email_white_36dp.png"
+                        Opacity="0.87"
+                        HorizontalOptions="End">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding EmailCommand}"
+                                          CommandParameter="{Binding AmEmail}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+
+              <StackLayout Grid.Row="1"
+                           Grid.Column="1"
+                           Style="{StaticResource ContactNameStack}">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="Acct. Mgr."
+                       HorizontalOptions="CenterAndExpand"
+                       FontSize="{StaticResource SmallFont}"/>
+              </StackLayout>
+            </Grid>
+          </StackLayout>
+          <StackLayout Grid.Column="2" IsVisible="{Binding ShouldAMCardBeShown}"
+                       Padding="5,0,5,0"
+                 BackgroundColor="#00338D">
+            <Grid HorizontalOptions="FillAndExpand"
+                  VerticalOptions="EndAndExpand"
+                  ColumnSpacing="0"
+                  RowSpacing="2">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackLayout Grid.Row="0"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="{Binding PsrName}"
+                       FontSize="{StaticResource MediumFont}"/>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="0">
+                <Image Source="ic_phone_white_36dp.png"
+                       Opacity="0.87"
+                       HorizontalOptions="Start">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding PhoneCommand}"
+                                          CommandParameter="{Binding PsrPhone}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="2">
+                <Image Source="ic_email_white_36dp.png"
+                        Opacity="0.87"
+                        HorizontalOptions="End">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding EmailCommand}"
+                                          CommandParameter="{Binding PsrEmail}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="1"
+                            Style="{StaticResource ContactNameStack}">
+                <Label Style="{StaticResource ContactNameLabel}"
+                      Text="Svc. Rep."
+                      HorizontalOptions="CenterAndExpand"
+                      FontSize="{StaticResource SmallFont}"/>
+              </StackLayout>
+            </Grid>
+          </StackLayout>
+          <BoxView IsVisible="{Binding ShouldAMCardBeShown}"
+                   Grid.Column="1"
+                   Color="White"
+                   BackgroundColor="White"
+                   HorizontalOptions="Fill"
+                   VerticalOptions="Fill"/>
+          <StackLayout Grid.Column="0"
+                       Grid.ColumnSpan="3" Padding="5,0,5,0"
+                       IsVisible="{Binding ShouldAMCardBeHidden}"
+                       BackgroundColor="#00338D">
+            <Grid HorizontalOptions="FillAndExpand"
+                  VerticalOptions="EndAndExpand"
+                  ColumnSpacing="0"
+                  RowSpacing="2">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackLayout Grid.Row="0"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="Service Representative"
+                       HorizontalOptions="CenterAndExpand"
+                       FontSize="{StaticResource MediumFont}"/>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="0">
+                <Image Source="ic_phone_white_36dp.png"
+                       Opacity="0.87"
+                       HorizontalOptions="Start">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding PhoneCommand}"
+                                          CommandParameter="{Binding PsrPhone}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="2">
+                <Image Source="ic_email_white_36dp.png"
+                        Opacity="0.87"
+                        HorizontalOptions="End">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding EmailCommand}"
+                                          CommandParameter="{Binding PsrEmail}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="1"
+                            Style="{StaticResource ContactNameStack}">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="{Binding PsrName}"
+                       FontAttributes="Bold"
+                       FontSize="{StaticResource MediumFont}"/>
+              </StackLayout>
+            </Grid>
+          </StackLayout>
+        </Grid>
+        <!--<Grid Grid.Row="1"
+               Padding="5,5,5,5"
+               BackgroundColor="White">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="5"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <StackLayout Grid.Column="0"
+                       IsVisible="{Binding ShouldAMCardBeShown}"
+                       Padding="5,0,5,0"
+                       BackgroundColor="#00338D">
+            <Grid HorizontalOptions="FillAndExpand"
+                  VerticalOptions="EndAndExpand">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackLayout Grid.Row="0"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="Account Manager"
+                       HorizontalOptions="CenterAndExpand"
+                       FontSize="{StaticResource MediumFont}"/>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="0">
+                <Image Source="ic_phone_white_36dp.png"
+                       Opacity="0.87"
+                       HorizontalOptions="Start">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding PhoneCommand}"
+                                          CommandParameter="{Binding AmPhone}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="2">
+                <Image Source="ic_email_white_36dp.png"
+                        Opacity="0.87"
+                        HorizontalOptions="End">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding EmailCommand}"
+                                          CommandParameter="{Binding AmEmail}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+
+              <StackLayout Grid.Row="1"
+                           Grid.Column="1"
+                           Style="{StaticResource ContactNameStack}">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="{Binding AmName}"
+                       FontSize="{StaticResource MediumFont}"
+                       FontAttributes="Bold"/>
+              </StackLayout>
+            </Grid>
+          </StackLayout>
+          <StackLayout Grid.Column="2" IsVisible="{Binding ShouldAMCardBeShown}"
+                       Padding="5,0,5,0"
+                 BackgroundColor="#00338D">
+            <Grid HorizontalOptions="FillAndExpand"
+                  VerticalOptions="EndAndExpand"
+                  ColumnSpacing="0"
+                  RowSpacing="2">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackLayout Grid.Row="0"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="Service Representative"
+                       HorizontalOptions="CenterAndExpand"
+                       FontSize="{StaticResource MediumFont}"/>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="0">
+                <Image Source="ic_phone_white_36dp.png"
+                       Opacity="0.87"
+                       HorizontalOptions="Start">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding PhoneCommand}"
+                                          CommandParameter="{Binding PsrPhone}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="2">
+                <Image Source="ic_email_white_36dp.png"
+                        Opacity="0.87"
+                        HorizontalOptions="End">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding EmailCommand}"
+                                          CommandParameter="{Binding PsrEmail}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="1"
+                            Style="{StaticResource ContactNameStack}">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="{Binding PsrName}"
+                       FontAttributes="Bold"
+                       FontSize="{StaticResource MediumFont}"/>
+              </StackLayout>
+            </Grid>
+          </StackLayout>
+          <BoxView IsVisible="{Binding ShouldAMCardBeShown}"
+                   Grid.Column="1"
+                   Color="White"
+                   BackgroundColor="White"
+                   HorizontalOptions="Fill"
+                   VerticalOptions="Fill"/>
+          <StackLayout Grid.Column="0"
+                       Grid.ColumnSpan="3" Padding="5,0,5,0"
+                       IsVisible="{Binding ShouldAMCardBeHidden}"
+                       BackgroundColor="#00338D">
+            <Grid HorizontalOptions="FillAndExpand"
+                  VerticalOptions="EndAndExpand"
+                  ColumnSpacing="0"
+                  RowSpacing="2">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackLayout Grid.Row="0"
+                           Grid.Column="0"
+                           Grid.ColumnSpan="3">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="Service Representative"
+                       HorizontalOptions="CenterAndExpand"
+                       FontSize="{StaticResource MediumFont}"/>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="0">
+                <Image Source="ic_phone_white_36dp.png"
+                       Opacity="0.87"
+                       HorizontalOptions="Start">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding PhoneCommand}"
+                                          CommandParameter="{Binding PsrPhone}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="2">
+                <Image Source="ic_email_white_36dp.png"
+                        Opacity="0.87"
+                        HorizontalOptions="End">
+                  <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding EmailCommand}"
+                                          CommandParameter="{Binding PsrEmail}"/>
+                  </Image.GestureRecognizers>
+                </Image>
+              </StackLayout>
+              <StackLayout Grid.Row="1"
+                           Grid.Column="1"
+                            Style="{StaticResource ContactNameStack}">
+                <Label Style="{StaticResource ContactNameLabel}"
+                       Text="{Binding PsrName}"
+                       FontAttributes="Bold"
+                       FontSize="{StaticResource MediumFont}"/>
+              </StackLayout>
+            </Grid>
+          </StackLayout>
+        </Grid>-->
+      </Grid>
+    </AbsoluteLayout>
+  </ContentPage.Content>
+  <ContentPage.Padding>
+    <OnPlatform x:TypeArguments="Thickness">
+      <OnPlatform.iOS>
+        0, 20, 0, 0
+      </OnPlatform.iOS>
+      <OnPlatform.Android>
+        0, 0, 0, 0
+      </OnPlatform.Android>
+      <OnPlatform.WinPhone>
+        0, 0, 0, 0
+      </OnPlatform.WinPhone>
+    </OnPlatform>
+  </ContentPage.Padding>
+  <ContentPage.Resources>
+    <ResourceDictionary>
+      <Style TargetType="t:RadListView">
+        <Setter Property="SelectionMode"
+                Value="Single"/>
+        <Setter Property="SelectionGesture"
+                Value="Tap"/>
+        <Setter Property="HorizontalOptions"
+                Value="FillAndExpand"/>
+        <Setter Property="VerticalOptions"
+                Value="FillAndExpand"/>
+        <Setter Property="ItemsSource"
+                Value="{Binding ActionItems}"/>
+        <Setter Property="SwipeOffset"
+                Value="10000"/>
+        <Setter Property="SwipeThreshold"
+                Value="10"/>
+        <Setter Property="IsPullToRefreshEnabled"
+                Value="True"/>
+        <Setter Property="IsItemSwipeEnabled"
+                Value="True"/>
+      </Style>
+      <OnPlatform x:TypeArguments="x:Double"
+                  x:Key="MicroFont"
+                  iOS="9"
+                  Android="10"/>
+      <OnPlatform x:TypeArguments="x:Double"
+                  x:Key="SmallFont"
+                  iOS="9"
+                  Android="12"/>
+      <OnPlatform x:TypeArguments="x:Double"
+                  x:Key="MediumFont"
+                  iOS="12"
+                  Android="14"/>
+      <OnPlatform x:TypeArguments="x:Double"
+                  x:Key="LargeFont"
+                  iOS="14"
+                  Android="16"/>
+      <Style x:Key="NwpHeaderButton"
+             TargetType="Button">
+        <Setter Property="BorderWidth"
+                Value="0"/>
+        <Setter Property="BorderRadius"
+                Value="5"/>
+        <Setter Property="TextColor"
+                Value="White"/>
+        <Setter Property="BackgroundColor"
+                Value="#51626F"/>
+        <Setter Property="BorderColor"
+                Value="#51626F"/>
+        <Setter Property="FontSize"
+                Value="{StaticResource MicroFont}"/>
+      </Style>
+
+      <Style x:Key="baseLabel"
+             TargetType="Label">
+        <Setter Property="TextColor"
+                Value="Black"/>
+        <Setter Property="LineBreakMode"
+                Value="TailTruncation"/>
+        <Setter Property="FontSize"
+                Value="{StaticResource MediumFont}"/>
+      </Style>
+      <Style x:Key="BlackDarkLabel"
+             TargetType="Label"
+             BasedOn="{StaticResource baseLabel}">
+
+      </Style>
+      <Style x:Key="BlackMediumLabel"
+             TargetType="Label"
+             BasedOn="{StaticResource baseLabel}">
+        <Setter Property="Opacity"
+                Value="0.54"/>
+      </Style>
+      <Style x:Key="HeaderButton"
+       TargetType="Button" >
+        <Setter Property="BackgroundColor"
+                Value="#51626F"/>
+        <Setter Property="BorderWidth"
+                Value="0"/>
+        <Setter Property="TextColor"
+                Value="White"/>
+        <Setter Property="BorderRadius"
+                Value="5"/>
+        <Setter Property="BorderColor"
+                Value="#51626F"/>
+      </Style>
+      <Style x:Key="DarkBlackLabel"
+             TargetType="Label">
+        <Setter Property="TextColor"
+                Value="Black"/>
+        <Setter Property="Opacity"
+                Value="0.87"/>
+        <Setter Property="LineBreakMode"
+                Value="TailTruncation"/>
+      </Style>
+      <Style x:Key="MediumBlackLabel"
+             TargetType="Label">
+        <Setter Property="TextColor"
+                Value="Black"/>
+        <Setter Property="Opacity"
+                Value="0.54"/>
+        <Setter Property="LineBreakMode"
+                Value="NoWrap"/>
+      </Style>
+      <Style TargetType="Grid">
+        <Setter Property="HorizontalOptions"
+                Value="FillAndExpand"/>
+        <Setter Property="VerticalOptions"
+                Value="FillAndExpand"/>
+        <Setter Property="ColumnSpacing"
+              Value="0"/>
+        <Setter Property="RowSpacing"
+              Value="0"/>
+      </Style>
+      
+      <Style TargetType="AbsoluteLayout">
+        <Setter Property="HorizontalOptions"
+                Value="FillAndExpand"/>
+        <Setter Property="VerticalOptions"
+                Value="FillAndExpand"/>
+      </Style>
+      <Style x:Key="ContactNameStack"
+             TargetType="StackLayout">
+        <Setter Property="HorizontalOptions"
+                Value="FillAndExpand"/>
+        <Setter Property="VerticalOptions"
+                Value="CenterAndExpand"/>
+      </Style>
+      <Style x:Key="ContactNameLabel"
+        TargetType="Label">
+        <Setter Property="HorizontalOptions"
+                Value="Center"/>
+        <Setter Property="VerticalOptions"
+                Value="Center"/>
+        <Setter Property="TextColor"
+                Value="White"/>
+        <Setter Property="LineBreakMode"
+                Value="TailTruncation"/>
+      </Style>
+      <Style x:Key="ContentHeaderLabel"
+               BasedOn="{StaticResource baseLabel}"
+               TargetType="Label">
+        <Setter Property="FontSize"
+                  Value="{StaticResource MediumFont}"/>
+      </Style>
+      <Style x:Key="WhiteLabel" TargetType="Label" BasedOn="{StaticResource baseLabel}">
+        <Setter Property="TextColor"
+                Value="White"/>
+
+      </Style>
+    </ResourceDictionary>
+  </ContentPage.Resources>
+</ContentPage>
